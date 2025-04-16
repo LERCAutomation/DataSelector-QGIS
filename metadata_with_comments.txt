@@ -1,0 +1,37 @@
+# The internal name of your plugin directory. Should match the folder name.
+name=DataSelector
+
+# A short summary shown in the plugin list.
+description=DataSelector is a QGIS plugin and associated SQL scripts to extract information from SQL Server based on any selection criteria. The output files can be created as ESRI Shapefile (.shp) files, Comma Separated Value (.csv) or Tab Delimited (.txt) files.
+
+# Plugin version (update this when you make releases).
+version=1.0
+
+# Minimum QGIS version required to load the plugin.
+qgisMinimumVersion=3.28
+
+# Author name and contact info
+author=Andy Foy
+email=andy@andyfoyconsulting.co.uk
+
+# The name of the main plugin class (defined in your Python code).
+class_name=DataSelector
+
+# The Python file where the class is defined (without `.py`).
+# QGIS will import this and call classFactory(iface)
+class_factory=classFactory
+
+# Optional: categorize your plugin for the plugin repository UI
+category=Database
+
+# Optional: icon for toolbar and plugin manager
+icon=icons/DataSelector16.png
+
+# Optional: tags shown in QGIS Plugin Manager
+tags=SQL Server, export, shapefile, CSV, data extraction, query, biodiversity
+
+# Optional: homepage or repo
+homepage=https://github.com/andyfoyconsulting/DataSelector-QGIS
+
+# Optional: plugin tracker/issues
+tracker=https://github.com/andyfoyconsulting/DataSelector-QGIS/issues

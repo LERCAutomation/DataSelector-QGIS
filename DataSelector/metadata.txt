@@ -1,9 +1,0 @@
-name=DataSelector
-description=...
-version=1.0
-qgisMinimumVersion=3.28
-author=Andy Foy
-author_email=andy@andyfoyconsulting.co.uk
-class_name=DataSelector
-class_factory=classFactory
-category=Database
