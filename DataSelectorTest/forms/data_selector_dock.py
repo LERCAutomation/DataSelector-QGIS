@@ -1,20 +1,23 @@
 from qgis.PyQt import uic
-from qgis.PyQt.QtWidgets import QDockWidget, QFileDialog, QPushButton, QHBoxLayout, QSpacerItem, QSizePolicy
+from qgis.PyQt.QtWidgets import QDockWidget, QFileDialog, QPushButton, QHBoxLayout, QSpacerItem, QSizePolicy, QWidget, QVBoxLayout
 import os
 
 from ..config_loader import DataSelectorConfig
 from ..sql_server_functions import SQLServerFunctions
 from ..file_functions import write_csv, write_txt, write_shapefile
+from ..devtools import attach_ptvsd
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'data_selector_dock.ui'))
-
 
 class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
     def __init__(self, parent=None):
         """Initialize the dockable widget and load configuration."""
         super().__init__(parent)
         self.setupUi(self)
+
+        # Start debugger and break on entry
+        attach_ptvsd(inject_breakpoint=True)
 
         # Load config from XML
         self.config = DataSelectorConfig()
@@ -37,6 +40,7 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
         self.setup_button_layout()
 
         # Connect signals
+        self.buttonDebug.clicked.connect(self.on_debug_button_clicked)
         self.buttonClear.clicked.connect(self.clear_form)
         self.buttonLoad.clicked.connect(self.load_query)
         self.buttonSave.clicked.connect(self.save_query)
@@ -44,24 +48,36 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
         self.buttonRun.clicked.connect(self.run_query)
         self.buttonRefreshTables.clicked.connect(self.refresh_tables)
 
-        # Procedure buttons
-        self.buttonRunProc = QPushButton("Run Selection Procedure")
-        self.buttonClearProc = QPushButton("Clear Selection Procedure")
-        self.layout().addWidget(self.buttonRunProc)
-        self.layout().addWidget(self.buttonClearProc)
-        self.buttonRunProc.clicked.connect(self.run_selection_procedure)
-        self.buttonClearProc.clicked.connect(self.clear_selection_procedure)
+    def on_debug_button_clicked(self):
+        import debugpy
+        import sys
+        sys.argv = [sys.argv[0]]  # strip VS Code args
+        try:
+            print("🛑 Waiting for VS Code to attach on port 5678...")
+            debugpy.listen(("localhost", 5678))
+            debugpy.wait_for_client()
+            print("✅ Debugger attached.")
+            debugpy.breakpoint()
+        except Exception as e:
+            print(f"⚠️ Failed to attach debugger: {e}")
 
     def setup_button_layout(self):
-        """Arrange buttons visually into a left-right horizontal layout."""
+        """Arrange buttons visually into a left-right horizontal layout at the bottom."""
         layout = QHBoxLayout()
+        layout.addWidget(self.buttonDebug)
         layout.addWidget(self.buttonLoad)
         layout.addWidget(self.buttonSave)
         layout.addWidget(self.buttonClear)
         layout.addWidget(self.buttonVerify)
         layout.addItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
         layout.addWidget(self.buttonRun)
-        self.layout().addLayout(layout)
+
+        # Wrap the layout in a QWidget (because we can't insert QLayout directly)
+        layout_wrapper = QWidget()
+        layout_wrapper.setLayout(layout)
+
+        # Add it to the main layout at the end
+        self.findChild(QVBoxLayout, "verticalLayout").addWidget(layout_wrapper)
 
     def refresh_tables(self):
         """Fetch table names from SQL Server and populate dropdown."""
@@ -101,20 +117,33 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
 
     def run_query(self):
         """Execute SQL query and export results."""
+        # Check if the run stored procedure is defined
+        if self.config.select_proc:
+            # Run selection stored procedure first
+            if not self.db.run_procedure(self.config.select_proc):
+                self.labelMessage.setText("Failed to run selection procedure.")
+                return
+
+        # Build and execute the SQL query
         sql = self.build_query()
         results = self.db.execute_sql(sql)
         if not results:
             self.labelMessage.setText("No data returned or query failed.")
             return
 
+        # Extract the column names from the SQL Server result set metadata
         headers = [desc[0] for desc in self.db.connection.cursor().description]
+
+        # Assign the actual query result rows (list of tuples) to 'rows'
         rows = results
 
+        # Prompt user for output file name
         output_format = self.comboOutput.currentText().lower()
         file_path, _ = QFileDialog.getSaveFileName(self, "Save Output", "", "All Files (*)")
         if not file_path:
             return
 
+        # Create the output file of the selected format from the query results
         if output_format == "csv":
             success = write_csv(file_path, headers, rows)
         elif output_format == "txt":
@@ -124,6 +153,14 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
         else:
             success = False
 
+        # Optionally clear selection afterward
+        # Check if the clear stored procedure is defined
+        if self.config.select_proc:
+            if not self.db.run_procedure(self.config.clear_proc):
+                self.labelMessage.setText("Failed to run clear procedure.")
+                return
+
+        # Show success message
         self.labelMessage.setText("Export successful." if success else "Export failed.")
 
     def verify_sql(self):
@@ -163,17 +200,3 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
         self.textGroupBy.clear()
         self.textOrderBy.clear()
         self.labelMessage.setText("Query cleared.")
-
-    def run_selection_procedure(self):
-        """Execute stored procedure to generate records."""
-        if self.db.run_procedure(self.config.select_proc):
-            self.labelMessage.setText("Selection procedure executed successfully.")
-        else:
-            self.labelMessage.setText("Failed to execute selection procedure.")
-
-    def clear_selection_procedure(self):
-        """Execute stored procedure to clear selection."""
-        if self.db.run_procedure(self.config.clear_proc):
-            self.labelMessage.setText("Clear procedure executed successfully.")
-        else:
-            self.labelMessage.setText("Failed to execute clear procedure.")

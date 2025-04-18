@@ -2,14 +2,14 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "QGIS Plugin",
+      "name": "Attach to QGIS (ptvsd)",
       "type": "python",
-      "request": "launch",
-      "program": "D:/GitHub/DataSelector-QGIS/DataSelector/data_selector.py",
-      "console": "integratedTerminal",
-      "env": {
-        "PYTHONPATH": "C:/Program Files/QGIS 3.40.5/bin"
-      }
+      "request": "attach",
+      "connect": {
+        "host": "localhost",
+        "port": 5678
+      },
+      "justMyCode": false
     }
   ]
 }

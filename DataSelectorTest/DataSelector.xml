@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+WARNING: This file should be edited carefully and backed up before changes.
+This configuration is used by the QGIS DataSelector plugin to extract and export
+spatial and tabular data from SQL Server.
+-->
+
+<configuration>
+<DataSelector>
+
+  <!-- Folder path where log files will be saved. -->
+  <LogFilePath>D:\Data Tools\DataSelector\Logfiles</LogFilePath>
+
+  <!-- SQL Server connection string or DSN. No longer uses .sde file. -->
+  <SDEFile>DRIVER={ODBC Driver 17 for SQL Server};SERVER=your_server;DATABASE=your_db;UID=your_user;PWD=your_pass</SDEFile>
+
+  <!-- Stored procedure to execute selection logic in SQL Server. -->
+  <SelectStoredProcedure>AFSelectSppRecords_ArcPro</SelectStoredProcedure>
+
+  <!-- Stored procedure to clear selection results in SQL Server. -->
+  <ClearStoredProcedure>AFClearSppRecords_ArcPro</ClearStoredProcedure>
+
+  <!-- Folder path where output files will be saved. -->
+  <DefaultExtractPath>D:\Data Tools\DataSelector\Extracts</DefaultExtractPath>
+
+  <!-- Folder path where saved query files (.qsf) will be stored. -->
+  <DefaultQueryPath>D:\Data Tools\DataSelector\Queries\</DefaultQueryPath>
+
+  <!-- Default export format (csv, txt, shp). Leave blank for user choice. -->
+  <DefaultFormat>csv</DefaultFormat>
+
+  <!-- SQL Server schema name for querying tables. -->
+  <DatabaseSchema>dbo</DatabaseSchema>
+
+  <!-- View name used to retrieve available spatial tables for selection. -->
+  <ObjectsTable>Spatial_Objects</ObjectsTable>
+
+  <!-- Wildcard(s) to include specific table names for extraction. Use | to separate multiple. -->
+  <IncludeWildcard>Spp_PointPoly_*Names|Spp_Poly_*Names</IncludeWildcard>
+
+  <!-- Wildcard(s) to exclude table names from extraction. Use | to separate multiple. -->
+  <ExcludeWildcard>Spp_*_*_*</ExcludeWildcard>
+
+  <!-- Whether to apply default symbology using .qml style files. -->
+  <DefaultSetSymbology>Yes</DefaultSetSymbology>
+
+  <!-- Location of .qml style file to use when applying symbology. -->
+  <LayerLocation>D:\Data Tools\DataSelector\LayerFiles\Test.qml</LayerLocation>
+
+  <!-- Whether to clear existing log file before writing new messages. -->
+  <DefaultClearLogFile>Yes</DefaultClearLogFile>
+
+  <!-- Whether to open the log file after execution. -->
+  <DefaultOpenLogFile>No</DefaultOpenLogFile>
+
+  <!-- Whether to validate SQL before executing. -->
+  <ValidateSQL>Yes</ValidateSQL>
+
+  <!-- Timeout (in seconds) for SQL validation check. -->
+  <SQLTimeout>15</SQLTimeout>
+
+  <!-- Whether to show columns as a vertical list in the interface. -->
+  <LoadColumnsVertically>Yes</LoadColumnsVertically>
+
+</DataSelector>
+</configuration>

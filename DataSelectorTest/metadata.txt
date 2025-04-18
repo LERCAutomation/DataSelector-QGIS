@@ -1,5 +1,7 @@
+[general]
 name=DataSelectorTest
 description=QGIS plugin to extract data from SQL Server using custom queries. Output can be shapefiles, CSV, or TXT.
+about=QGIS plugin to extract data from SQL Server using custom queries. Output can be shapefiles, CSV, or TXT.
 version=1.0
 qgisMinimumVersion=3.28
 author=Andy Foy
@@ -8,6 +10,6 @@ class_name=DataSelector
 class_factory=classFactory
 category=Database
 icon=icons/DataSelector16.png
-tags=SQL Server, export, shapefile, CSV, data extraction
+tags=SQL Server,export,shapefile,CSV,data extraction
 homepage=https://github.com/andyfoyconsulting/DataSelector-QGIS
 tracker=https://github.com/andyfoyconsulting/DataSelector-QGIS/issues
