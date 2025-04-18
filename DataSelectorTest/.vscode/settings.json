@@ -1,3 +1,13 @@
 {
-    "python.pythonPath": "C:\\Program Files\\QGIS 3.40.5\\bin\\python.exe"
+  "python.defaultInterpreterPath": "C:\\Program Files\\QGIS 3.40.5\\apps\\Python312\\python3.exe",
+  "python.envFile": "${workspaceFolder}/.env",
+  "terminal.integrated.env.windows": {
+    "PATH": "C:\\Program Files\\QGIS 3.40.5\\apps\\Python312;C:\\Program Files\\QGIS 3.40.5\\apps\\Python312\\Scripts;C:\\Program Files\\QGIS 3.40.5\\apps\\qgis-ltr\\bin;C:\\Program Files\\QGIS 3.40.5\\bin;${env:PATH}",
+    "PYTHONHOME": "C:\\Program Files\\QGIS 3.40.5\\apps\\Python312",
+    "PYTHONPATH": "C:\\Program Files\\QGIS 3.40.5\\apps\\qgis-ltr\\python;C:\\Program Files\\QGIS 3.40.5\\apps\\qgis-ltr\\python\\plugins;C:\\Program Files\\QGIS 3.40.5\\apps\\Python312\\Lib;C:\\Program Files\\QGIS 3.40.5\\apps\\Python312\\Lib\\site-packages"
+  },
+  "python.analysis.extraPaths": [
+    "C:/Program Files/QGIS 3.40.5/apps/qgis-ltr/python",
+    "C:/Program Files/QGIS 3.40.5/apps/qgis-ltr/python/plugins"
+  ]
 }

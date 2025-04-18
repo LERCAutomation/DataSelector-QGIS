@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <ui version="4.0">
  <class>DataSelectorDockWidget</class>
  <widget class="QDockWidget" name="DataSelectorDockWidget">
@@ -9,15 +9,8 @@
    <layout class="QVBoxLayout" name="verticalLayout">
 
     <item>
-     <widget class="QComboBox" name="comboTable"/>
-    </item>
-
-    <item>
      <widget class="QPushButton" name="buttonRefreshTables">
-      <property name="text">
-       <string>Refresh Tables</string>
-      </property>
-     </widget>
+      <property name="toolTip"><string>Refresh list of tables</string></property></widget>
     </item>
 
     <item>
@@ -33,6 +26,10 @@
     </item>
 
     <item>
+     <widget class="QComboBox" name="comboTable"/>
+    </item>
+
+    <item>
      <widget class="QLabel" name="labelWhere">
       <property name="text">
        <string>Where</string>
@@ -41,7 +38,7 @@
     </item>
 
     <item>
-     <widget class="QTextEdit" name="textWhere"/>
+     <widget class="QTextEdit" name="textWhere"><property name="minimumSize"><size><width>0</width><height>40</height></size></property></widget>
     </item>
 
     <item>
@@ -53,7 +50,7 @@
     </item>
 
     <item>
-     <widget class="QTextEdit" name="textGroupBy"/>
+     <widget class="QTextEdit" name="textGroupBy"><property name="minimumSize"><size><width>0</width><height>40</height></size></property></widget>
     </item>
 
     <item>
@@ -65,7 +62,7 @@
     </item>
 
     <item>
-     <widget class="QTextEdit" name="textOrderBy"/>
+     <widget class="QTextEdit" name="textOrderBy"><property name="minimumSize"><size><width>0</width><height>40</height></size></property></widget>
     </item>
 
     <item>
@@ -85,6 +82,18 @@
     </item>
 
     <item>
+ <widget class="QCheckBox" name="checkClearLog">
+  <property name="text">
+   <string>Clear log before run</string>
+  </property>
+ </widget>
+</item><item>
+ <widget class="QCheckBox" name="checkOpenLog">
+  <property name="text">
+   <string>Open log after run</string>
+  </property>
+ </widget>
+</item><item>
      <widget class="QLabel" name="labelMessage">
       <property name="text">
        <string/>
@@ -96,14 +105,6 @@
      <widget class="QPushButton" name="buttonRun">
       <property name="text">
        <string>Run</string>
-      </property>
-     </widget>
-    </item>
-
-    <item>
-     <widget class="QPushButton" name="buttonDebug">
-      <property name="text">
-       <string>Debug</string>
       </property>
      </widget>
     </item>

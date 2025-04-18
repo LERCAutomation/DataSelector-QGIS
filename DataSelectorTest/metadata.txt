@@ -13,3 +13,6 @@ icon=icons/DataSelector16.png
 tags=SQL Server,export,shapefile,CSV,data extraction
 homepage=https://github.com/andyfoyconsulting/DataSelector-QGIS
 tracker=https://github.com/andyfoyconsulting/DataSelector-QGIS/issues
+
+[python]
+main=data_selector.py

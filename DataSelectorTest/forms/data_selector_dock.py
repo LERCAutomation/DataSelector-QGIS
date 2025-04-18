@@ -1,11 +1,12 @@
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QDockWidget, QFileDialog, QPushButton, QHBoxLayout, QSpacerItem, QSizePolicy, QWidget, QVBoxLayout
 import os
+import getpass
 
 from ..config_loader import DataSelectorConfig
 from ..sql_server_functions import SQLServerFunctions
-from ..file_functions import write_csv, write_txt, write_shapefile
-from ..devtools import attach_ptvsd
+from ..file_functions import write_csv, write_txt, write_shapefile, create_log_file, write_log, delete_log_file, open_log_file
+from ..string_functions import strip_illegals
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'data_selector_dock.ui'))
@@ -16,8 +17,7 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
         super().__init__(parent)
         self.setupUi(self)
 
-        # Start debugger and break on entry
-        attach_ptvsd(inject_breakpoint=True)
+        self._on_close_callback = None
 
         # Load config from XML
         self.config = DataSelectorConfig()
@@ -28,6 +28,18 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
 
         # Connect to SQL Server
         self.db = SQLServerFunctions(self.config.sde_file)
+
+        user_id = strip_illegals(getpass.getuser())
+        if not user_id:
+            user_id = "Temp"
+        self.log_file = os.path.join(self.config.log_path, f"DataSelector_{user_id}.log")
+        self.checkClearLog.setChecked(self.config.clear_log)
+        self.checkOpenLog.setChecked(self.config.open_log)
+        if self.checkClearLog.isChecked():
+            delete_log_file(self.log_file)
+        create_log_file(self.log_file)
+        if user_id == "Temp":
+            write_log(self.log_file, "User ID not found. User ID used will be 'Temp'")
 
         # Populate table list on load
         if self.config.loaded:
@@ -40,7 +52,6 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
         self.setup_button_layout()
 
         # Connect signals
-        self.buttonDebug.clicked.connect(self.on_debug_button_clicked)
         self.buttonClear.clicked.connect(self.clear_form)
         self.buttonLoad.clicked.connect(self.load_query)
         self.buttonSave.clicked.connect(self.save_query)
@@ -48,23 +59,18 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
         self.buttonRun.clicked.connect(self.run_query)
         self.buttonRefreshTables.clicked.connect(self.refresh_tables)
 
-    def on_debug_button_clicked(self):
-        import debugpy
-        import sys
-        sys.argv = [sys.argv[0]]  # strip VS Code args
-        try:
-            print("🛑 Waiting for VS Code to attach on port 5678...")
-            debugpy.listen(("localhost", 5678))
-            debugpy.wait_for_client()
-            print("✅ Debugger attached.")
-            debugpy.breakpoint()
-        except Exception as e:
-            print(f"⚠️ Failed to attach debugger: {e}")
+    def set_on_close_callback(self, callback):
+        """Allow the plugin to reset its reference when closed."""
+        self._on_close_callback = callback
+
+    def closeEvent(self, event):
+        if self._on_close_callback:
+            self._on_close_callback()
+        event.accept()
 
     def setup_button_layout(self):
         """Arrange buttons visually into a left-right horizontal layout at the bottom."""
         layout = QHBoxLayout()
-        layout.addWidget(self.buttonDebug)
         layout.addWidget(self.buttonLoad)
         layout.addWidget(self.buttonSave)
         layout.addWidget(self.buttonClear)
@@ -80,11 +86,19 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
         self.findChild(QVBoxLayout, "verticalLayout").addWidget(layout_wrapper)
 
     def refresh_tables(self):
-        """Fetch table names from SQL Server and populate dropdown."""
+        """Fetch filtered table names from SQL Server and populate dropdown."""
         self.comboTable.clear()
-        tables = self.db.get_table_names(self.config.objects_table)
+
+        include_wc = self.config.include_wildcard
+        exclude_wc = self.config.exclude_wildcard
+        schema = self.config.schema
+        objects_table = self.config.objects_table
+
+        tables = self.db.get_table_names(objects_table, include_wc, exclude_wc, schema)
         self.comboTable.addItems(tables)
         self.labelMessage.setText(f"{len(tables)} tables loaded.")
+
+        write_log(self.log_file, f"Refreshed table list: {len(tables)} tables found")
 
     def load_columns(self, event):
         """Load field names from selected table and populate Columns box."""
@@ -97,6 +111,8 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
             self.textColumns.setPlainText(",\n".join(columns))
         else:
             self.textColumns.setPlainText(", ".join(columns))
+
+        write_log(self.log_file, f"Loaded columns for table: {table}")
 
     def build_query(self):
         """Assemble the SQL query from UI components."""
@@ -117,18 +133,24 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
 
     def run_query(self):
         """Execute SQL query and export results."""
+
+        write_log(self.log_file, "Running selection stored procedure")
+
         # Check if the run stored procedure is defined
         if self.config.select_proc:
             # Run selection stored procedure first
             if not self.db.run_procedure(self.config.select_proc):
                 self.labelMessage.setText("Failed to run selection procedure.")
+                write_log(self.log_file, "Failed to run selection stored procedure")
                 return
 
         # Build and execute the SQL query
         sql = self.build_query()
+        write_log(self.log_file, f"Executing SQL: {sql}")
         results = self.db.execute_sql(sql)
         if not results:
             self.labelMessage.setText("No data returned or query failed.")
+            write_log(self.log_file, "SQL returned no data or failed")
             return
 
         # Extract the column names from the SQL Server result set metadata
@@ -143,6 +165,8 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
         if not file_path:
             return
 
+        write_log(self.log_file, f"Exporting as {output_format} to {file_path}")
+
         # Create the output file of the selected format from the query results
         if output_format == "csv":
             success = write_csv(file_path, headers, rows)
@@ -153,21 +177,29 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
         else:
             success = False
 
-        # Optionally clear selection afterward
+        # Clear selection afterward
         # Check if the clear stored procedure is defined
-        if self.config.select_proc:
+        if self.config.clear_proc:
+            write_log(self.log_file, "Running clear selection stored procedure")
             if not self.db.run_procedure(self.config.clear_proc):
                 self.labelMessage.setText("Failed to run clear procedure.")
                 return
 
         # Show success message
         self.labelMessage.setText("Export successful." if success else "Export failed.")
+        write_log(self.log_file, "Export complete" if success else "Export failed")
+
+        if self.checkOpenLog.isChecked():
+            write_log(self.log_file, "Opening log file")
+            open_log_file(self.log_file)
 
     def verify_sql(self):
         """Validate SQL using SET NOEXEC ON/OFF."""
         sql = self.build_query()
+        write_log(self.log_file, f"Validating SQL: {sql}")
         is_valid = self.db.validate_sql(sql, timeout=self.config.sql_timeout)
         self.labelMessage.setText("SQL is valid." if is_valid else "SQL is NOT valid.")
+        write_log(self.log_file, "SQL validated successfully" if is_valid else "SQL failed validation")
 
     def save_query(self):
         """Save the current query parts to a .qsf file."""

@@ -25,8 +25,8 @@ class DataSelectorConfig:
         self.default_format = ""
         self.schema = ""
         self.objects_table = ""
-        self.include_wc = ""
-        self.exclude_wc = ""
+        self.include_wildcard = ""
+        self.exclude_wildcard = ""
         self.set_symbology = False
         self.layer_location = ""
         self.clear_log = False
@@ -58,8 +58,8 @@ class DataSelectorConfig:
             self.default_format = root.findtext("DefaultFormat", "")
             self.schema = root.findtext("DatabaseSchema", "")
             self.objects_table = root.findtext("ObjectsTable", "")
-            self.include_wc = root.findtext("IncludeWildcard", "")
-            self.exclude_wc = root.findtext("ExcludeWildcard", "")
+            self.include_wildcard = root.findtext("IncludeWildcard", "")
+            self.exclude_wildcard = root.findtext("ExcludeWildcard", "")
             self.layer_location = root.findtext("LayerLocation", "")
 
             # Boolean flags — 'Yes' or 'Y' (case-insensitive) is interpreted as True

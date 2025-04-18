@@ -1,6 +1,6 @@
 import csv
 import os
-from qgis.core import QgsFields, QgsField, QgsVectorLayer, QgsVectorFileWriter, QgsFeature, QgsGeometry
+from qgis.core import QgsFields, QgsField, QgsVectorLayer, QgsVectorFileWriter, QgsFeature, QgsGeometry, QgsProject
 from PyQt5.QtCore import QVariant
 from datetime import datetime
 
