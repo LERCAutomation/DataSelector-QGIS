@@ -1,18 +1,20 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>DataSelectorDockWidget</class>
  <widget class="QDockWidget" name="DataSelectorDockWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>274</width>
+    <height>1212</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>Data Selector</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QVBoxLayout" name="verticalLayout">
-
-    <item>
-     <widget class="QPushButton" name="buttonRefreshTables">
-      <property name="toolTip"><string>Refresh list of tables</string></property></widget>
-    </item>
-
     <item>
      <widget class="QLabel" name="labelColumns">
       <property name="text">
@@ -20,15 +22,31 @@
       </property>
      </widget>
     </item>
-
     <item>
-     <widget class="QTextEdit" name="textColumns"/>
+     <widget class="QTextEdit" name="textColumns">
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarAsNeeded</enum>
+      </property>
+     </widget>
     </item>
-
     <item>
-     <widget class="QComboBox" name="comboTable"/>
+     <widget class="QPushButton" name="buttonRefreshTables">
+      <property name="toolTip">
+       <string>Refresh list of tables</string>
+      </property>
+      <property name="icon">
+       <iconset>
+        <normaloff>../icons/DataSelector16.png</normaloff>../icons/DataSelector16.png</iconset>
+      </property>
+     </widget>
     </item>
-
+    <item>
+     <widget class="QComboBox" name="comboTable">
+      <property name="toolTip">
+       <string>Select a source table</string>
+      </property>
+     </widget>
+    </item>
     <item>
      <widget class="QLabel" name="labelWhere">
       <property name="text">
@@ -36,11 +54,19 @@
       </property>
      </widget>
     </item>
-
     <item>
-     <widget class="QTextEdit" name="textWhere"><property name="minimumSize"><size><width>0</width><height>40</height></size></property></widget>
+     <widget class="QTextEdit" name="textWhere">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarAsNeeded</enum>
+      </property>
+     </widget>
     </item>
-
     <item>
      <widget class="QLabel" name="labelGroupBy">
       <property name="text">
@@ -48,11 +74,19 @@
       </property>
      </widget>
     </item>
-
     <item>
-     <widget class="QTextEdit" name="textGroupBy"><property name="minimumSize"><size><width>0</width><height>40</height></size></property></widget>
+     <widget class="QTextEdit" name="textGroupBy">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarAsNeeded</enum>
+      </property>
+     </widget>
     </item>
-
     <item>
      <widget class="QLabel" name="labelOrderBy">
       <property name="text">
@@ -60,11 +94,19 @@
       </property>
      </widget>
     </item>
-
     <item>
-     <widget class="QTextEdit" name="textOrderBy"><property name="minimumSize"><size><width>0</width><height>40</height></size></property></widget>
+     <widget class="QTextEdit" name="textOrderBy">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarAsNeeded</enum>
+      </property>
+     </widget>
     </item>
-
     <item>
      <widget class="QLabel" name="labelOutput">
       <property name="text">
@@ -72,75 +114,105 @@
       </property>
      </widget>
     </item>
-
     <item>
      <widget class="QComboBox" name="comboOutput">
-      <item><property name="text"><string>CSV</string></property></item>
-      <item><property name="text"><string>TXT</string></property></item>
-      <item><property name="text"><string>SHP</string></property></item>
+      <property name="toolTip">
+       <string>Select an output format</string>
+      </property>
+      <item>
+       <property name="text">
+        <string>Shapefile</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>CSV file (comma delimited)</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Text file (tab delimited)</string>
+       </property>
+      </item>
      </widget>
     </item>
-
     <item>
- <widget class="QCheckBox" name="checkClearLog">
-  <property name="text">
-   <string>Clear log before run</string>
-  </property>
- </widget>
-</item><item>
- <widget class="QCheckBox" name="checkOpenLog">
-  <property name="text">
-   <string>Open log after run</string>
-  </property>
- </widget>
-</item><item>
+     <widget class="QCheckBox" name="checkOpenLog">
+      <property name="toolTip">
+       <string>Open the log file when the process is complete?</string>
+      </property>
+      <property name="text">
+       <string>Open log after run</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="checkClearLog">
+      <property name="toolTip">
+       <string>Clear the log file before the process starts?</string>
+      </property>
+      <property name="text">
+       <string>Clear log before run</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="buttonRun">
+      <property name="toolTip">
+       <string>Run the query</string>
+      </property>
+      <property name="text">
+       <string>Run</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QLabel" name="labelMessage">
       <property name="text">
        <string/>
       </property>
      </widget>
     </item>
-
-    <item>
-     <widget class="QPushButton" name="buttonRun">
-      <property name="text">
-       <string>Run</string>
-      </property>
-     </widget>
-    </item>
-
     <item>
      <widget class="QPushButton" name="buttonClear">
+      <property name="toolTip">
+       <string>Clear the form</string>
+      </property>
       <property name="text">
        <string>Clear</string>
       </property>
      </widget>
     </item>
-
     <item>
      <widget class="QPushButton" name="buttonVerify">
+      <property name="toolTip">
+       <string>Verify the query is valid</string>
+      </property>
       <property name="text">
        <string>Verify</string>
       </property>
      </widget>
     </item>
-
     <item>
      <widget class="QPushButton" name="buttonLoad">
+      <property name="toolTip">
+       <string>Load an existing query</string>
+      </property>
       <property name="text">
        <string>Load</string>
       </property>
      </widget>
     </item>
-
     <item>
      <widget class="QPushButton" name="buttonSave">
+      <property name="toolTip">
+       <string>Save the query</string>
+      </property>
       <property name="text">
        <string>Save</string>
       </property>
      </widget>
     </item>
-
    </layout>
   </widget>
  </widget>

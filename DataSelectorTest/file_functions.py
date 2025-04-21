@@ -94,8 +94,9 @@ def create_log_file(log_path):
     If the file already exists, it will be overwritten.
     """
     try:
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with open(log_path, 'w', encoding='utf-8') as f:
-            f.write(f"Log file started on {datetime.now()}\n")
+            f.write(f"{timestamp} : Log file started\n")
         return True
     except Exception as e:
         print(f"[Log Error] Failed to create log: {e}")

@@ -73,6 +73,7 @@ class SQLServerFunctions:
         Used to populate the Columns box on double-click.
         """
         try:
+            print(f"[Getting Columns names] for table: {table_name}")
             conn = self._connect()
             if not conn:
                 return []

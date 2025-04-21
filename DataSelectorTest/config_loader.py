@@ -1,7 +1,6 @@
 import os
 import xml.etree.ElementTree as ET
 
-
 class DataSelectorConfig:
     """
     This class loads and parses the XML configuration file for the DataSelector plugin.
