@@ -1,4 +1,6 @@
 from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtCore import Qt
+
 from .forms.data_selector_dock import DataSelectorDockWidget
 
 class DataSelector:
@@ -17,9 +19,13 @@ class DataSelector:
         self.iface.addPluginToMenu("&DataSelector", self.action)
 
         # Load and show the dock widget when the plugin is started
-        self.dock_widget = DataSelectorDockWidget()
+        self.dock_widget = DataSelectorDockWidget(self.iface.mainWindow())
+
+        # Set the dock widget to be closable
         self.dock_widget.set_on_close_callback(self.on_dock_closed)
-        self.iface.addDockWidget(0, self.dock_widget)
+
+        # Set the dock widget to be movable
+        self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dock_widget)
 
     def unload(self):
         # Remove from Plugins menu
@@ -33,9 +39,13 @@ class DataSelector:
     def toggle_dock(self):
         if self.dock_widget is None:
             # Re-create if it's been closed
-            self.dock_widget = DataSelectorDockWidget()
+            self.dock_widget = DataSelectorDockWidget(self.iface.mainWindow())
+
+            # Set the dock widget to be closable
             self.dock_widget.set_on_close_callback(self.on_dock_closed)
-            self.iface.addDockWidget(0, self.dock_widget)
+            
+            # Set the dock widget to be movable
+            self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dock_widget)
         else:
             # If it's hidden, show it
             if not self.dock_widget.isVisible():

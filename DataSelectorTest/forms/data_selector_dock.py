@@ -72,9 +72,6 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
         # Clear tooltip for the Columns text box
         self.textColumns.setToolTip("")
 
-        # Layout: place buttons at bottom in order
-        self.setup_button_layout()
-
         # Connect button signals
         self.buttonClear.clicked.connect(self.clear_form)
         self.buttonLoad.clicked.connect(self.load_query)
@@ -94,23 +91,6 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
         if self._on_close_callback:
             self._on_close_callback()
         event.accept()
-
-    def setup_button_layout(self):
-        """Arrange buttons visually into a left-right horizontal layout at the bottom."""
-        layout = QHBoxLayout()
-        layout.addWidget(self.buttonLoad)
-        layout.addWidget(self.buttonSave)
-        layout.addWidget(self.buttonClear)
-        layout.addWidget(self.buttonVerify)
-        layout.addItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
-        layout.addWidget(self.buttonRun)
-
-        # Wrap the layout in a QWidget (because we can't insert QLayout directly)
-        layout_wrapper = QWidget()
-        layout_wrapper.setLayout(layout)
-
-        # Add it to the main layout at the end
-        self.findChild(QVBoxLayout, "verticalLayout").addWidget(layout_wrapper)
 
     def refresh_tables(self):
         """Fetch filtered table names from SQL Server and populate dropdown."""

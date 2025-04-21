@@ -38,7 +38,7 @@ class SQLServerFunctions:
             # Check if there is a connection to the database
             conn = self._connect()
             if not conn:
-                return false
+                return False
 
             # Create a cursor and execute a simple query
             cursor = self.connection.cursor()

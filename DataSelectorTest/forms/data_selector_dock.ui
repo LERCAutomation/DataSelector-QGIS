@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>274</width>
-    <height>1212</height>
+    <height>800</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,28 +24,56 @@
     </item>
     <item>
      <widget class="QTextEdit" name="textColumns">
+      <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>16777215</height>
+        </size>
+      </property>
       <property name="verticalScrollBarPolicy">
        <enum>Qt::ScrollBarAsNeeded</enum>
       </property>
-     </widget>
+      <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>2</verstretch>
+        </sizepolicy>
+      </property>     
+      </widget>
     </item>
     <item>
-     <widget class="QPushButton" name="buttonRefreshTables">
-      <property name="toolTip">
-       <string>Refresh list of tables</string>
-      </property>
-      <property name="icon">
-       <iconset>
-        <normaloff>../icons/DataSelector16.png</normaloff>../icons/DataSelector16.png</iconset>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QComboBox" name="comboTableName">
-      <property name="toolTip">
-       <string>Select a source table</string>
-      </property>
-     </widget>
+     <layout class="QHBoxLayout" name="horizontalLayoutTableAndRefresh">
+      <item>
+       <widget class="QComboBox" name="comboTableName">
+        <property name="toolTip">
+         <string>Select a source table</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="buttonRefreshTables">
+        <property name="minimumSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Refresh list of tables</string>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>../icons/DataSelector16.png</normaloff>../icons/DataSelector16.png</iconset>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
     <item>
      <widget class="QLabel" name="labelWhere">
@@ -56,16 +84,28 @@
     </item>
     <item>
      <widget class="QTextEdit" name="textWhere">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>40</height>
-       </size>
-      </property>
       <property name="verticalScrollBarPolicy">
        <enum>Qt::ScrollBarAsNeeded</enum>
       </property>
-     </widget>
+      <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>1</verstretch>
+        </sizepolicy>
+      </property>
+      <property name="minimumSize">
+        <size>
+          <width>0</width>
+          <height>60</height>
+        </size>
+      </property>
+      <property name="maximumSize">
+        <size>
+          <width>16777215</width>
+          <height>16777215</height>
+        </size>
+      </property>
+      </widget>
     </item>
     <item>
      <widget class="QLabel" name="labelGroupBy">
@@ -76,16 +116,28 @@
     </item>
     <item>
      <widget class="QTextEdit" name="textGroupBy">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>40</height>
-       </size>
-      </property>
       <property name="verticalScrollBarPolicy">
        <enum>Qt::ScrollBarAsNeeded</enum>
       </property>
-     </widget>
+      <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>1</verstretch>
+        </sizepolicy>
+      </property>
+      <property name="minimumSize">
+        <size>
+          <width>0</width>
+          <height>60</height>
+        </size>
+      </property>
+      <property name="maximumSize">
+        <size>
+          <width>16777215</width>
+          <height>16777215</height>
+        </size>
+      </property>
+      </widget>
     </item>
     <item>
      <widget class="QLabel" name="labelOrderBy">
@@ -96,16 +148,28 @@
     </item>
     <item>
      <widget class="QTextEdit" name="textOrderBy">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>40</height>
-       </size>
-      </property>
       <property name="verticalScrollBarPolicy">
        <enum>Qt::ScrollBarAsNeeded</enum>
       </property>
-     </widget>
+      <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>1</verstretch>
+        </sizepolicy>
+      </property>
+      <property name="minimumSize">
+        <size>
+          <width>0</width>
+          <height>60</height>
+        </size>
+      </property>
+      <property name="maximumSize">
+        <size>
+          <width>16777215</width>
+          <height>16777215</height>
+        </size>
+      </property>
+      </widget>
     </item>
     <item>
      <widget class="QLabel" name="labelOutputFormat">
@@ -157,62 +221,158 @@
      </widget>
     </item>
     <item>
-     <widget class="QPushButton" name="buttonRun">
-      <property name="toolTip">
-       <string>Run the query</string>
-      </property>
-      <property name="text">
-       <string>Run</string>
-      </property>
-     </widget>
+      <widget class="QLabel" name="labelMessage">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayoutButtons">
+        <item>
+          <widget class="QPushButton" name="buttonLoad">
+            <property name="toolTip">
+              <string>Load an existing query</string>
+            </property>
+            <property name="text">
+              <string>Load</string>
+            </property>
+            <property name="minimumSize">
+              <size>
+                <width>50</width>
+                <height>0</height>
+              </size>
+            </property>
+            <property name="maximumSize">
+              <size>
+                <width>50</width>
+                <height>16777215</height>
+              </size>
+            </property>
+          </widget>
+        </item>
+        <item>
+          <widget class="QPushButton" name="buttonSave">
+            <property name="toolTip">
+              <string>Save the query</string>
+            </property>
+            <property name="text">
+              <string>Save</string>
+            </property>
+            <property name="minimumSize">
+              <size>
+                <width>50</width>
+                <height>0</height>
+              </size>
+            </property>
+            <property name="maximumSize">
+              <size>
+                <width>50</width>
+                <height>16777215</height>
+              </size>
+            </property>
+          </widget>
+        </item>
+        <item>
+          <widget class="QPushButton" name="buttonClear">
+            <property name="toolTip">
+              <string>Clear the form</string>
+            </property>
+            <property name="text">
+              <string>Clear</string>
+            </property>
+            <property name="minimumSize">
+              <size>
+                <width>50</width>
+                <height>0</height>
+              </size>
+            </property>
+            <property name="maximumSize">
+              <size>
+                <width>50</width>
+                <height>16777215</height>
+              </size>
+            </property>
+          </widget>
+        </item>
+        <item>
+          <widget class="QPushButton" name="buttonVerify">
+            <property name="toolTip">
+              <string>Verify the query is valid</string>
+            </property>
+            <property name="text">
+              <string>Verify</string>
+            </property>
+            <property name="minimumSize">
+              <size>
+                <width>50</width>
+                <height>0</height>
+              </size>
+            </property>
+            <property name="maximumSize">
+              <size>
+                <width>50</width>
+                <height>16777215</height>
+              </size>
+            </property>
+          </widget>
+        </item>
+        <item>
+          <spacer name="horizontalSpacer">
+            <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+              <enum>QSizePolicy::Expanding</enum>
+            </property>
+            <property name="sizeHint">
+              <size>
+                <width>80</width>
+                <height>20</height>
+              </size>
+            </property>
+          </spacer>
+        </item>
+        <item>
+          <widget class="QPushButton" name="buttonRun">
+            <property name="toolTip">
+              <string>Run the query</string>
+            </property>
+            <property name="text">
+              <string>Run</string>
+            </property>
+            <property name="minimumSize">
+              <size>
+                <width>50</width>
+                <height>0</height>
+              </size>
+            </property>
+            <property name="maximumSize">
+              <size>
+                <width>50</width>
+                <height>16777215</height>
+              </size>
+            </property>
+          </widget>
+        </item>
+      </layout>
     </item>
     <item>
-     <widget class="QLabel" name="labelMessage">
-      <property name="text">
-       <string/>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="buttonClear">
-      <property name="toolTip">
-       <string>Clear the form</string>
-      </property>
-      <property name="text">
-       <string>Clear</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="buttonVerify">
-      <property name="toolTip">
-       <string>Verify the query is valid</string>
-      </property>
-      <property name="text">
-       <string>Verify</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="buttonLoad">
-      <property name="toolTip">
-       <string>Load an existing query</string>
-      </property>
-      <property name="text">
-       <string>Load</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="buttonSave">
-      <property name="toolTip">
-       <string>Save the query</string>
-      </property>
-      <property name="text">
-       <string>Save</string>
-      </property>
-     </widget>
-    </item>
+      <spacer name="verticalSpacerBottom">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+       <property name="sizeHint">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
    </layout>
   </widget>
  </widget>
