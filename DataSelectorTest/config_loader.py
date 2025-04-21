@@ -26,7 +26,6 @@ class DataSelectorConfig:
         self.objects_table = ""
         self.include_wildcard = ""
         self.exclude_wildcard = ""
-        self.set_symbology = False
         self.layer_location = ""
         self.clear_log = False
         self.open_log = False
@@ -62,7 +61,6 @@ class DataSelectorConfig:
             self.layer_location = root.findtext("LayerLocation", "")
 
             # Boolean flags — 'Yes' or 'Y' (case-insensitive) is interpreted as True
-            self.set_symbology = root.findtext("DefaultSetSymbology", "No").lower() in ("yes", "y")
             self.clear_log = root.findtext("DefaultClearLogFile", "No").lower() in ("yes", "y")
             self.open_log = root.findtext("DefaultOpenLogFile", "No").lower() in ("yes", "y")
             self.validate_sql = root.findtext("ValidateSQL", "No").lower() in ("yes", "y")

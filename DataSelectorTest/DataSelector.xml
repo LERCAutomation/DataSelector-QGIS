@@ -28,7 +28,7 @@ spatial and tabular data from SQL Server.
   <DefaultQueryPath>D:\Data Tools\DataSelector\Queries\</DefaultQueryPath>
 
   <!-- Default export format (csv, txt, shp). Leave blank for user choice. -->
-  <DefaultFormat>csv</DefaultFormat>
+  <DefaultFormat>shp</DefaultFormat>
 
   <!-- SQL Server schema name for querying tables. -->
   <DatabaseSchema>dbo</DatabaseSchema>
@@ -41,9 +41,6 @@ spatial and tabular data from SQL Server.
 
   <!-- Wildcard(s) to exclude table names from extraction. Use | to separate multiple. -->
   <ExcludeWildcard>Spp_*_*_*</ExcludeWildcard>
-
-  <!-- Whether to apply default symbology using .qml style files. -->
-  <DefaultSetSymbology>Yes</DefaultSetSymbology>
 
   <!-- Location of .qml style file to use when applying symbology. -->
   <LayerLocation>D:\Data Tools\DataSelector\LayerFiles\Test.qml</LayerLocation>

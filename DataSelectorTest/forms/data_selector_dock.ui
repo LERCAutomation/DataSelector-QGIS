@@ -41,7 +41,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QComboBox" name="comboTable">
+     <widget class="QComboBox" name="comboTableName">
       <property name="toolTip">
        <string>Select a source table</string>
       </property>
@@ -108,14 +108,14 @@
      </widget>
     </item>
     <item>
-     <widget class="QLabel" name="labelOutput">
+     <widget class="QLabel" name="labelOutputFormat">
       <property name="text">
        <string>Output Format</string>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QComboBox" name="comboOutput">
+     <widget class="QComboBox" name="comboOutputFormat">
       <property name="toolTip">
        <string>Select an output format</string>
       </property>

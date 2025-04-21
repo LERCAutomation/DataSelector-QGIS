@@ -1,3 +1,5 @@
+from qgis.core import QgsMessageLog, Qgis
+
 import pyodbc
 import re
 
@@ -17,9 +19,13 @@ class SQLServerFunctions:
         Reuses the existing connection if already open.
         """
         try:
+            # Connect to the database using the connection string
             if not self.connection or not self._is_connection_open():
                 self.connection = pyodbc.connect(self.conn_str, timeout=5)
+
+            # Return the connection object
             return self.connection
+        
         except Exception as e:
             print(f"[SQL Connect Error] {e}")
             return None
@@ -29,10 +35,21 @@ class SQLServerFunctions:
         Check if the connection is open.
         """
         try:
+            # Check if there is a connection to the database
+            conn = self._connect()
+            if not conn:
+                return false
+
+            # Create a cursor and execute a simple query
             cursor = self.connection.cursor()
             cursor.execute("SELECT 1")
+
+            # Close the cursor
             cursor.close()
+
+            # Return True if the connection is open
             return True
+        
         except:
             return False
 
@@ -42,25 +59,35 @@ class SQLServerFunctions:
         Applies wildcard filtering if provided.
         """
         try:
+
+            # Check if there is a connection to the database
             conn = self._connect()
             if not conn:
                 return []
 
+            # Create a cursor and execute the SQL query
             cursor = conn.cursor()
             sql = f"SELECT ObjectName FROM {objects_table}"
             cursor.execute(sql)
             rows = [row[0] for row in cursor.fetchall()]
 
+            # Apply include wildcard filtering if provided
             if include_wildcard:
                 inc_pattern = fnmatch_to_regex(include_wildcard, schema)
                 inc_regex = re.compile(inc_pattern, re.IGNORECASE)
                 rows = [name for name in rows if inc_regex.match(name)]
 
+            # Apply exclude wildcard filtering if provided
             if exclude_wildcard:
                 exc_pattern = fnmatch_to_regex(exclude_wildcard, schema)
                 exc_regex = re.compile(exc_pattern, re.IGNORECASE)
                 rows = [name for name in rows if not exc_regex.match(name)]
 
+            # Remove schema prefix from names if present
+            if schema:
+                rows = [name.split('.')[1] if name.startswith(schema + '.') else name for name in rows]
+
+            # Sort the table names alphabetically and return them
             return sorted(rows)
 
         except Exception as e:
@@ -73,17 +100,24 @@ class SQLServerFunctions:
         Used to populate the Columns box on double-click.
         """
         try:
-            print(f"[Getting Columns names] for table: {table_name}")
+            # Check if there is a connection to the database
             conn = self._connect()
             if not conn:
                 return []
 
+            # Create a cursor and execute the SQL query
             cursor = conn.cursor()
             sql = f"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ?"
             cursor.execute(sql, table_name)
-            return [row[0] for row in cursor.fetchall()]
+
+            # Fetch all column names, filtering out 'shape' and 'sp_geometry' (case-insensitive) and return them
+            return [
+                row[0] for row in cursor.fetchall()
+                if row[0].lower() not in ('shape', 'sp_geometry', 'mi_style')
+            ]
+
         except Exception as e:
-            print(f"[Get Columns Error] {e}")
+            QgsMessageLog.logMessage(f"[Get Columns Error] {e}", "DataSelector", Qgis.Critical)
             return []
 
     def execute_sql(self, sql):
@@ -92,13 +126,18 @@ class SQLServerFunctions:
         Used for running the final export query.
         """
         try:
+            # Check if there is a connection to the database
             conn = self._connect()
             if not conn:
                 return None
 
+            # Create a cursor and execute the SQL query
             cursor = conn.cursor()
             cursor.execute(sql)
+
+            # Fetch all rows and return them
             return cursor.fetchall()
+        
         except Exception as e:
             print(f"[SQL Execution Error] {e}")
             return None
@@ -109,14 +148,19 @@ class SQLServerFunctions:
         Used for 'SelectStoredProcedure' and 'ClearStoredProcedure'.
         """
         try:
+            # Check if there is a connection to the database
             conn = self._connect()
             if not conn:
                 return False
 
+            # Create a cursor and execute the stored procedure
             cursor = conn.cursor()
             cursor.execute(f"EXEC {proc_name}")
             cursor.commit()
+
+            # Return True if the procedure executed successfully
             return True
+        
         except Exception as e:
             print(f"[Procedure Error] {e}")
             return False
@@ -127,15 +171,26 @@ class SQLServerFunctions:
         This mimics the ArcGIS add-in logic used for query validation.
         """
         try:
+            # Check if there is a connection to the database
             conn = self._connect()
             if not conn:
                 return False
 
+            # Create a cursor
             cursor = conn.cursor()
+
+            # Set the noexec option to validate the SQL
             cursor.execute("SET NOEXEC ON")
+
+            # Execute the SQL statement
             cursor.execute(sql)
+
+            # Clear the noexec option
             cursor.execute("SET NOEXEC OFF")
+
+            # Return True if the SQL is valid
             return True
+        
         except Exception as e:
             print(f"[SQL Validation Error] {e}")
             return False

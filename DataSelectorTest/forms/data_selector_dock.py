@@ -16,9 +16,12 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
     def __init__(self, parent=None):
         """Initialize the dockable widget and load configuration."""
+
+        # Call the parent constructor
         super().__init__(parent)
         self.setupUi(self)
 
+        # Set the on_close callback to None
         self._on_close_callback = None
 
         # Load config from XML
@@ -39,19 +42,46 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
         if self.config.loaded:
             self.refresh_tables()
 
+        # Define a translation map from display names to internal format codes
+        self.format_translation = {
+            "Shapefile": "shp",
+            "CSV file (comma delimited)": "csv",
+            "Text file (tab delimited)": "txt"
+        }
+
+        # Define a reverse map for display names
+        self.format_map = {
+            'csv': 'CSV file (comma delimited)',
+            'txt': 'Text file (tab delimited)',
+            'shp': 'Shapefile'
+        }
+
+        # Translate config value if it matches one of the short codes
+        display_format = self.format_map.get(self.config.default_format.lower(), self.config.default_format)
+
+        # Set the output format default in the combo box
+        index = self.comboOutputFormat.findText(display_format)
+        if index != -1:
+            self.comboOutputFormat.setCurrentIndex(index)
+        else:
+            self.comboOutputFormat.setCurrentIndex(0)
+
+        # Connect signal to changes in the table name selection
+        self.comboTableName.currentIndexChanged.connect(self.handle_table_selection)
+
+        # Clear tooltip for the Columns text box
+        self.textColumns.setToolTip("")
+
         # Layout: place buttons at bottom in order
         self.setup_button_layout()
 
-        # Connect signals
+        # Connect button signals
         self.buttonClear.clicked.connect(self.clear_form)
         self.buttonLoad.clicked.connect(self.load_query)
         self.buttonSave.clicked.connect(self.save_query)
         self.buttonVerify.clicked.connect(self.verify_sql)
         self.buttonRun.clicked.connect(self.run_query)
         self.buttonRefreshTables.clicked.connect(self.refresh_tables)
-
-        # Connect the checkbox to the tooltip function
-        self.checkOpenLog.toggled.connect(self.set_columns_tooltip)
 
         # Hook up logic
         self.textColumns.mouseDoubleClickEvent = self.load_columns
@@ -86,11 +116,11 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
         """Fetch filtered table names from SQL Server and populate dropdown."""
 
         # Clear existing items
-        self.comboTable.clear()
+        self.comboTableName.clear()
         # Add default item
-        self.comboTable.addItem("Select a table")
+        self.comboTableName.addItem("Select a table")
         # Reset to default index
-        self.comboTable.setCurrentIndex(0)
+        self.comboTableName.setCurrentIndex(0)
 
         # Set the wildcard filters, schema, and objects table
         include_wc = self.config.include_wildcard
@@ -102,7 +132,7 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
         tables = self.db.get_table_names(objects_table, include_wc, exclude_wc, schema)
 
         # Add the tables to the dropdown
-        self.comboTable.addItems(tables)
+        self.comboTableName.addItems(tables)
 
         # Check if any tables were found
         if not tables:
@@ -112,9 +142,7 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
     def load_columns(self, event):
         """Load field names from selected table and populate Columns box."""
 
-        print("load_columns event triggered")
-
-        table = self.comboTable.currentText()
+        table = self.comboTableName.currentText()
         if not table:
             return
 
@@ -124,7 +152,7 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
         else:
             self.textColumns.setPlainText(", ".join(columns))
 
-        write_log(self.log_file, f"Loaded columns for table: {table}")
+        # write_log(self.log_file, f"Loaded columns for table: {table}")
 
     def build_query(self):
         """Assemble the SQL query from UI components."""
@@ -132,7 +160,7 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
         where = self.textWhere.toPlainText().strip()
         group = self.textGroupBy.toPlainText().strip()
         order = self.textOrderBy.toPlainText().strip()
-        table = self.comboTable.currentText()
+        table = self.comboTableName.currentText()
 
         sql = f"SELECT {cols or '*'} FROM {table}"
         if where:
@@ -198,20 +226,26 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
         rows = results
 
         # Prompt user for output file name
-        output_format = self.comboOutput.currentText().lower()
+        output_format = self.comboOutputFormat.currentText().lower()
         file_path, _ = QFileDialog.getSaveFileName(self, "Save Output", "", "All Files (*)")
         if not file_path:
             return
 
         write_log(self.log_file, f"Exporting as {output_format} to {file_path}")
 
-        # Create the output file of the selected format from the query results
-        if output_format == "Shapefile":
-            success = write_shapefile(file_path, headers, rows)
-        elif output_format == "CSV file (comma delimited)":
-            success = write_csv(file_path, headers, rows)
-        elif output_format == "Text file (tab delimited)":
-            success = write_txt(file_path, headers, rows)
+        # Translate display format to internal key
+        format_key = self.format_translation.get(output_format, None)
+
+        # Dispatch table for output writers
+        writer_map = {
+            "shp": write_shapefile,
+            "csv": write_csv,
+            "txt": write_txt
+        }
+
+        # Write the output using the appropriate function
+        if format_key in writer_map:
+            success = writer_map[format_key](file_path, headers, rows)
         else:
             success = False
 
@@ -233,10 +267,13 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
     def verify_sql(self):
         """Validate SQL using SET NOEXEC ON/OFF."""
         sql = self.build_query()
-        write_log(self.log_file, f"Validating SQL: {sql}")
+
+        # write_log(self.log_file, f"Validating SQL: {sql}")
+
         is_valid = self.db.validate_sql(sql, timeout=self.config.sql_timeout)
         self.labelMessage.setText("SQL is valid." if is_valid else "SQL is NOT valid.")
-        write_log(self.log_file, "SQL validated successfully" if is_valid else "SQL failed validation")
+
+        # write_log(self.log_file, "SQL validated successfully" if is_valid else "SQL failed validation")
 
     def save_query(self):
         """Save the current query parts to a .qsf file."""
@@ -286,12 +323,14 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
             self.query_name = os.path.basename(file_path)
 
             # Set the selected table in the combo box
-            if self.comboTable.currentIndex() > 0:
-                selected_table = self.comboTable.currentText()
+            selected_table = self.comboTableName.currentText()
+            if selected_table and selected_table == "Select a table":
+                # No valid table selected
+                selected_table = None
 
             # Set the selected output format in the combo box
-            if self.comboOutput.currentIndex() > 0:
-                selected_format = self.comboOutput.currentText()
+            if self.comboOutputFormat.currentIndex() > 0:
+                selected_format = self.comboOutputFormat.currentText()
 
             # Save the query to the file
             with open(file_path, "w", encoding="utf-8") as f:
@@ -373,10 +412,10 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
                 elif line.upper().startswith("FROM {") and line.upper() != "FROM {}":
                     value = line[6:-1]  # strip 'FROM {' and '}'
                     # Find the index of the table in the combo box
-                    index = self.comboTable.findText(value)
+                    index = self.comboTableName.findText(value)
                     # If found, set it as the current index
                     if index != -1:
-                        self.comboTable.setCurrentIndex(index)
+                        self.comboTableName.setCurrentIndex(index)
                 elif line.upper().startswith("WHERE {") and line.upper() != "WHERE {}":
                     value = line[7:-1]  # strip 'WHERE {' and '}'
                     self.textWhere.setPlainText(value.replace("$$", "\n"))
@@ -389,10 +428,10 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
                 elif line.upper().startswith("FORMAT {") and line.upper() != "FORMAT {}":
                     value = line[8:-1]  # strip 'FORMAT {' and '}'
                     # Find the index of the format in the combo box
-                    index = self.comboOutput.findText(value)
+                    index = self.comboOutputFormat.findText(value)
                     # If found, set it as the current index
                     if index != -1:
-                        self.comboOutput.setCurrentIndex(index)
+                        self.comboOutputFormat.setCurrentIndex(index)
 
         self.labelMessage.setText("Query loaded.")
         return True
@@ -406,9 +445,13 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
 
         self.labelMessage.setText("Query cleared.")
 
-    def set_columns_tooltip(self):
-        """Set tooltip for the Columns text box."""
+    def handle_table_selection(self, index):
+        """Handle changes in the selected table name."""
 
-        # If the combotable is not the default item, set the tooltip
-        if self.comboTable.currentIndex() > 0:
+        # If the selected index is not 0 and the first item is still the default
+        if index > 0 and self.comboTableName.itemText(0) == "Select a table":
+            # Remove the default item
+            self.comboTableName.removeItem(0)
+
+            # Set tooltip for the Columns text box
             self.textColumns.setToolTip("Double-click to populate with list of columns from the selected table")
