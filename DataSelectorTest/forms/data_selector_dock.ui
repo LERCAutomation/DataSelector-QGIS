@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>274</width>
-    <height>800</height>
+    <height>500</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -65,7 +65,7 @@
          </size>
         </property>
         <property name="toolTip">
-         <string>Refresh list of tables</string>
+         <string>Refresh tables list</string>
         </property>
         <property name="icon">
          <iconset>
@@ -105,7 +105,7 @@
           <height>16777215</height>
         </size>
       </property>
-      </widget>
+     </widget>
     </item>
     <item>
      <widget class="QLabel" name="labelGroupBy">
@@ -201,16 +201,6 @@
      </widget>
     </item>
     <item>
-     <widget class="QCheckBox" name="checkOpenLog">
-      <property name="toolTip">
-       <string>Open the log file when the process is complete?</string>
-      </property>
-      <property name="text">
-       <string>Open log after run</string>
-      </property>
-     </widget>
-    </item>
-    <item>
      <widget class="QCheckBox" name="checkClearLog">
       <property name="toolTip">
        <string>Clear the log file before the process starts?</string>
@@ -221,6 +211,16 @@
      </widget>
     </item>
     <item>
+      <widget class="QCheckBox" name="checkOpenLog">
+       <property name="toolTip">
+        <string>Open the log file when the process is complete?</string>
+       </property>
+       <property name="text">
+        <string>Open log after run</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QLabel" name="labelMessage">
        <property name="text">
         <string/>

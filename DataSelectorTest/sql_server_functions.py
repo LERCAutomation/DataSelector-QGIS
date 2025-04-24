@@ -168,13 +168,13 @@ class SQLServerFunctions:
     def validate_sql(self, sql, timeout=10):
         """
         Validate SQL syntax without running the query using SET NOEXEC ON/OFF.
-        This mimics the ArcGIS add-in logic used for query validation.
+        Returns a tuple: (True, None) if SQL is valid, or (False, error_message) if invalid.
         """
         try:
             # Check if there is a connection to the database
             conn = self._connect()
             if not conn:
-                return False
+                return False, "Database connection failed."
 
             # Create a cursor
             cursor = conn.cursor()
@@ -189,8 +189,13 @@ class SQLServerFunctions:
             cursor.execute("SET NOEXEC OFF")
 
             # Return True if the SQL is valid
-            return True
-        
+            return True, None
+
         except Exception as e:
-            print(f"[SQL Validation Error] {e}")
-            return False
+            # Clear the noexec option in case of error
+            try:
+                cursor.execute("SET NOEXEC OFF")
+            except:
+                pass
+            return False, str(e)
+

@@ -80,25 +80,114 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
         self.buttonRun.clicked.connect(self.run_query)
         self.buttonRefreshTables.clicked.connect(self.refresh_tables)
 
+        # Connect text and combobox signals
+        self.textColumns.textChanged.connect(self.update_button_states)
+        self.textWhere.textChanged.connect(self.update_button_states)
+        self.textGroupBy.textChanged.connect(self.update_button_states)
+        self.textOrderBy.textChanged.connect(self.update_button_states)
+        self.comboOutputFormat.currentIndexChanged.connect(self.update_button_states)
+        self.comboTableName.currentIndexChanged.connect(self.update_button_states)
+
         # Hook up logic
         self.textColumns.mouseDoubleClickEvent = self.load_columns
 
+        # Set the process status to None
+        self.process_status = None
+        self.update_button_states()
+
     def set_on_close_callback(self, callback):
         """Allow the plugin to reset its reference when closed."""
+
+        # Set the callback function to be called when the dock widget is closed
         self._on_close_callback = callback
 
     def closeEvent(self, event):
+        """Handle the close event of the dock widget.
+        This method is called when the user closes the dock widget.
+        It allows the plugin to perform any necessary cleanup or state saving.
+        Args:
+            event: The close event object.
+        """
+
+        # If a callback is set, call it
         if self._on_close_callback:
             self._on_close_callback()
+
+        # Perform any additional cleanup or state saving here
         event.accept()
+
+    def update_button_states(self):
+        '''Update the state of buttons based on the current form state.
+        This method enables or disables buttons based on whether a process is running
+        and whether certain fields are filled out. It is called whenever the state of
+        the form changes.'''
+
+        # Check if a process is running
+        process_running = self.process_status is not None
+
+        # Enable or disable the load button
+        self.buttonLoad.setEnabled(not process_running)
+
+        # Get the text from the text boxes and the selected table
+        columns_text = self.textColumns.toPlainText().strip()
+        where_text = self.textWhere.toPlainText().strip()
+        group_by_text = self.textGroupBy.toPlainText().strip()
+        order_by_text = self.textOrderBy.toPlainText().strip()
+        selected_table = self.comboTableName.currentText()
+        if selected_table and selected_table == "Select a table":
+            # No valid table selected
+            selected_table = None
+        output_format = self.comboOutputFormat.currentText()
+
+        # Enable or disable the save button
+        self.buttonSave.setEnabled(
+            bool(not process_running and (
+                columns_text or where_text or group_by_text or order_by_text
+            ))
+        )
+
+        # Enable or disable the clear button
+        self.buttonClear.setEnabled(
+            bool(not process_running and (
+            columns_text or
+            where_text or
+            group_by_text or
+            order_by_text
+            ))
+        )
+
+        # Enable or disable the run button
+        self.buttonRun.setEnabled(
+            bool(not process_running and
+            output_format and
+            columns_text and
+            (selected_table or (
+                where_text and where_text.lower().startswith("from "))
+            ))
+        )
+
+        # Enable or disable the verify button
+        self.buttonVerify.setEnabled(
+            bool(not process_running and
+            (
+                selected_table is not None or
+                (where_text and
+                len(where_text) > 5 and
+                where_text.lower().startswith("from "))
+            ) and
+            bool(columns_text)
+            )
+        )
 
     def refresh_tables(self):
         """Fetch filtered table names from SQL Server and populate dropdown."""
 
         # Clear existing items
         self.comboTableName.clear()
+
         # Add default item
         self.comboTableName.addItem("Select a table")
+
         # Reset to default index
         self.comboTableName.setCurrentIndex(0)
 
@@ -122,33 +211,68 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
     def load_columns(self, event):
         """Load field names from selected table and populate Columns box."""
 
-        table = self.comboTableName.currentText()
-        if not table:
+        # Get the selected table name
+        selected_table = self.comboTableName.currentText()
+        if selected_table and selected_table == "Select a table":
+            # No valid table selected
+            selected_table = None
+
+        if not selected_table:
             return
 
-        columns = self.db.get_columns(table)
+        # Get the columns from the database
+        columns = self.db.get_columns(selected_table)
+
+        # Check if any columns are already loaded
+        if self.textColumns.toPlainText().strip():
+            # If columns are already loaded, ask the user if they want to overwrite
+            reply = QMessageBox.question(self, "List Columns", "Overwrite text in the Columns field?",
+                                         QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if reply == QMessageBox.No:
+                return
+
+        # Insert the columns into the text box as a vertical
+        # list or a comma-separated list
         if self.config.columns_vertical:
             self.textColumns.setPlainText(",\n".join(columns))
         else:
             self.textColumns.setPlainText(", ".join(columns))
 
-        # write_log(self.log_file, f"Loaded columns for table: {table}")
+        # write_log(self.log_file, f"Loaded columns for table: {selected_table}")
 
     def build_query(self):
         """Assemble the SQL query from UI components."""
-        cols = self.textColumns.toPlainText().strip()
-        where = self.textWhere.toPlainText().strip()
-        group = self.textGroupBy.toPlainText().strip()
-        order = self.textOrderBy.toPlainText().strip()
-        table = self.comboTableName.currentText()
 
-        sql = f"SELECT {cols or '*'} FROM {table}"
-        if where:
-            sql += f" WHERE {where}"
-        if group:
-            sql += f" GROUP BY {group}"
-        if order:
-            sql += f" ORDER BY {order}"
+        # Get the entered values from the text boxes and combo box
+        table_name = self.comboTableName.currentText().strip()
+        columns = self.textColumns.toPlainText().strip()
+        where_clause = self.textWhere.toPlainText().strip()
+        group_clause = self.textGroupBy.toPlainText().strip()
+        order_clause = self.textOrderBy.toPlainText().strip()
+
+        # If the table name is empty or the first item is the default
+        # and the user has not selected a table, set it to "TempTable"
+        # to avoid SQL errors
+        if not table_name or table_name == "Select a table":
+            table_name = "TempTable"
+
+        # Construct the SQL command
+        sql = "SELECT "
+        sql += columns if columns else "*"
+
+        if not where_clause:
+            sql += f" FROM {table_name}"
+        elif where_clause[:5].lower() == "from ":
+            sql += f" {where_clause}"
+        else:
+            sql += f" FROM {table_name} WHERE {where_clause}"
+
+        if group_clause:
+            sql += f" GROUP BY {group_clause}"
+        if order_clause:
+            sql += f" ORDER BY {order_clause}"
+        
+        # Return the assembled SQL query
         return sql
 
     def run_query(self):
@@ -179,6 +303,10 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
 
 
 
+
+        # Set the process status to True
+        self.process_status = True
+        self.update_button_states()
 
         write_log(self.log_file, "Running selection stored procedure")
 
@@ -244,16 +372,41 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
             write_log(self.log_file, "Opening log file")
             open_log_file(self.log_file)
 
+        # Set the process status to False
+        self.process_status = False
+        self.update_button_states()
+
     def verify_sql(self):
-        """Validate SQL using SET NOEXEC ON/OFF."""
+        """Validate SQL using SET NOEXEC ON/OFF and structured clause logic."""
+
+        # Build the SQL command
         sql = self.build_query()
 
-        # write_log(self.log_file, f"Validating SQL: {sql}")
+        # Validate the SQL command
+        try:
+            # Check if the SQL is valid
+            is_valid, error_msg = self.db.validate_sql(sql, timeout=self.config.sql_timeout)
 
-        is_valid = self.db.validate_sql(sql, timeout=self.config.sql_timeout)
-        self.labelMessage.setText("SQL is valid." if is_valid else "SQL is NOT valid.")
+            # Inform the user of the result
+            if is_valid:
+                self.labelMessage.setText("SQL is valid.")
+                return
 
-        # write_log(self.log_file, "SQL validated successfully" if is_valid else "SQL failed validation")
+            # If the SQL is not valid, show an error message
+            self.labelMessage.setText("SQL is invalid.")
+
+            # Show the error message in a message box
+            QMessageBox.information(self, "DataSelector", f"SQL is invalid:\n{error_msg}")
+
+        except Exception as ex:
+            # Handle any exceptions that occur during validation
+
+            # Shown an error message
+            message = str(ex).replace("SET NOEXEC ON;", "").replace("SET NOEXEC OFF;", "")
+            self.labelMessage.setText(f"SQL is NOT valid:\n{message}")
+
+            # Show the error message in a message box
+            QMessageBox.information(self, f"DataSelector", "SQL is invalid:\n{message}")
 
     def save_query(self):
         """Save the current query parts to a .qsf file."""
@@ -418,10 +571,15 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
 
     def clear_form(self):
         """Clear all query entry fields."""
+
+        # Clear the text boxes
         self.textColumns.clear()
         self.textWhere.clear()
         self.textGroupBy.clear()
         self.textOrderBy.clear()
+
+        # Clear the saved/loaded query name
+        self.query_name = ""
 
         self.labelMessage.setText("Query cleared.")
 
