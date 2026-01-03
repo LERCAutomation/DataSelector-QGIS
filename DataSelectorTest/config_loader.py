@@ -15,10 +15,10 @@ class DataSelectorConfig:
 
     def _defaults(self):
         """Define fallback values for all config attributes."""
-        self.sde_file = ""
+        self.log_path = ""
+        self.sql_connection = ""
         self.select_proc = ""
         self.clear_proc = ""
-        self.log_path = ""
         self.extract_path = ""
         self.query_path = ""
         self.default_format = ""
@@ -47,10 +47,10 @@ class DataSelectorConfig:
             root = tree.getroot().find("DataSelector")
 
             # Mandatory settings
-            self.sde_file = root.findtext("SDEFile", "")
+            self.log_path = root.findtext("LogFilePath", "")
+            self.sql_connection = root.findtext("SQLConnection", "")
             self.select_proc = root.findtext("SelectStoredProcedure", "")
             self.clear_proc = root.findtext("ClearStoredProcedure", "")
-            self.log_path = root.findtext("LogFilePath", "")
             self.extract_path = root.findtext("DefaultExtractPath", "")
             self.query_path = root.findtext("DefaultQueryPath", "")
             self.default_format = root.findtext("DefaultFormat", "")

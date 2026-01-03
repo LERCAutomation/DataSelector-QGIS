@@ -32,7 +32,7 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
             self.labelMessage.setText("")
 
         # Connect to SQL Server
-        self.db = SQLServerFunctions(self.config.sde_file)
+        self.db = SQLServerFunctions(self.config.sql_connection)
 
         # Set up the UI components
         self.checkClearLog.setChecked(self.config.clear_log)
@@ -278,6 +278,10 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
     def run_query(self):
         """Execute SQL query and export results."""
 
+        # Validate input parameters
+        if not self.validate_parameters():
+            return
+
         # Replace any illegal characters in the user name string.
         user_id = strip_illegals(getpass.getuser())
 
@@ -293,20 +297,103 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
 
         # Clear the log file if the checkbox is checked
         if self.checkClearLog.isChecked():
-            delete_log_file(self.log_file)
+            if not delete_log_file(self.log_file):
+                QMessageBox.critical(self, "DataSelector", "Cannot delete log file. Please make sure it is not open in another window.")
+                return
 
         # If the userid is temp
         if user_id == "Temp":
             write_log(self.log_file, "User ID not found. User ID used will be 'Temp'")
 
-
-
-
-
+        # Clear the message label
+        self.labelMessage.setText("")
 
         # Set the process status to True
         self.process_status = True
         self.update_button_states()
+
+        # Perform the selectiom
+        success = self.execute_selection()
+
+        # Run the stored procedure to clear the temporary tables
+        if (success or self.selectErrors):
+            self.clear_selection()
+
+
+
+
+        # Show success message
+        self.labelMessage.setText("Export successful." if success else "Export failed.")
+        write_log(self.log_file, "Export complete" if success else "Export failed")
+
+        if self.checkOpenLog.isChecked():
+            write_log(self.log_file, "Opening log file")
+            open_log_file(self.log_file)
+
+        # Set the process status to False
+        self.process_status = False
+        self.update_button_states()
+
+    def validate_parameters(self):
+        """Validate the input parameters for the SQL query."""
+
+        # Get the entered values from the text boxes and combo box
+        table_name = self.comboTableName.currentText().strip()
+        columns = self.textColumns.toPlainText().strip()
+        where_clause = self.textWhere.toPlainText().strip()
+
+        # Check the user entered parameters
+        if not columns:
+            QMessageBox.warning(self, "DataSelector", "Please specify which columns you wish to select")
+            return False
+        
+        # Table name should always be selected
+        if (not table_name or table_name == "Select a table") and where_clause.lower().startswith("from "):
+            QMessageBox.warning(self, "DataSelector", "Please select a table to query from")
+            return False
+        
+        # Output format should always be selected
+        if self.comboOutputFormat.currentIndex() == 0:
+            QMessageBox.warning(self, "DataSelector", "Please select an output format")
+            return False
+        
+        # Clear the message label
+        self.labelMessage.setText("")
+        return True
+
+    def verify_sql(self):
+        """Validate SQL using SET NOEXEC ON/OFF and structured clause logic."""
+
+        # Build the SQL command
+        sql = self.build_query()
+
+        # Validate the SQL command
+        try:
+            # Check if the SQL is valid
+            is_valid, error_msg = self.db.validate_sql(sql, timeout=self.config.sql_timeout)
+
+            # Inform the user of the result
+            if is_valid:
+                self.labelMessage.setText("SQL is valid.")
+                return
+
+            # If the SQL is not valid, show an error message
+            self.labelMessage.setText("SQL is invalid.")
+
+            # Show the error message in a message box
+            QMessageBox.information(self, "DataSelector", f"SQL is invalid:\n{error_msg}")
+
+        except Exception as ex:
+            # Handle any exceptions that occur during validation
+
+            # Shown an error message
+            message = str(ex).replace("SET NOEXEC ON;", "").replace("SET NOEXEC OFF;", "")
+            self.labelMessage.setText(f"SQL is NOT valid:\n{message}")
+
+            # Show the error message in a message box
+            QMessageBox.information(self, f"DataSelector", "SQL is invalid:\n{message}")
+
+    def execute_selection(self):
 
         write_log(self.log_file, "Running selection stored procedure")
 
@@ -357,6 +444,17 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
         else:
             success = False
 
+
+
+        # Show success message
+        self.labelMessage.setText("Export successful." if success else "Export failed.")
+        write_log(self.log_file, "Export complete" if success else "Export failed")
+
+    def clear_selection(self):
+
+        # Set up the SQL command
+
+
         # Check if the clear stored procedure is defined
         if self.config.clear_proc:
             write_log(self.log_file, "Deleting temporary tables ...")
@@ -364,49 +462,6 @@ class DataSelectorDockWidget(QDockWidget, FORM_CLASS):
                 self.labelMessage.setText("Error: Deleting the temporary tables.")
                 return
 
-        # Show success message
-        self.labelMessage.setText("Export successful." if success else "Export failed.")
-        write_log(self.log_file, "Export complete" if success else "Export failed")
-
-        if self.checkOpenLog.isChecked():
-            write_log(self.log_file, "Opening log file")
-            open_log_file(self.log_file)
-
-        # Set the process status to False
-        self.process_status = False
-        self.update_button_states()
-
-    def verify_sql(self):
-        """Validate SQL using SET NOEXEC ON/OFF and structured clause logic."""
-
-        # Build the SQL command
-        sql = self.build_query()
-
-        # Validate the SQL command
-        try:
-            # Check if the SQL is valid
-            is_valid, error_msg = self.db.validate_sql(sql, timeout=self.config.sql_timeout)
-
-            # Inform the user of the result
-            if is_valid:
-                self.labelMessage.setText("SQL is valid.")
-                return
-
-            # If the SQL is not valid, show an error message
-            self.labelMessage.setText("SQL is invalid.")
-
-            # Show the error message in a message box
-            QMessageBox.information(self, "DataSelector", f"SQL is invalid:\n{error_msg}")
-
-        except Exception as ex:
-            # Handle any exceptions that occur during validation
-
-            # Shown an error message
-            message = str(ex).replace("SET NOEXEC ON;", "").replace("SET NOEXEC OFF;", "")
-            self.labelMessage.setText(f"SQL is NOT valid:\n{message}")
-
-            # Show the error message in a message box
-            QMessageBox.information(self, f"DataSelector", "SQL is invalid:\n{message}")
 
     def save_query(self):
         """Save the current query parts to a .qsf file."""

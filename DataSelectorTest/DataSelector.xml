@@ -12,8 +12,8 @@ spatial and tabular data from SQL Server.
   <!-- Folder path where log files will be saved. -->
   <LogFilePath>D:\Data Tools\DataSelector\Logfiles</LogFilePath>
 
-  <!-- SQL Server connection string or DSN. No longer uses .sde file. -->
-  <SDEFile>DRIVER={ODBC Driver 17 for SQL Server};SERVER=LAPTOP-8C1RJG21\SQLSERVER2017;DATABASE=NBNExtract;Trusted_Connection=yes;</SDEFile>
+  <!-- SQL Server connection string. -->
+  <SQLConnection>DRIVER={ODBC Driver 17 for SQL Server};SERVER=LAPTOP-8C1RJG21\SQLSERVER2017;DATABASE=NBNExtract;Trusted_Connection=yes;</SQLConnection>
 
   <!-- Stored procedure to execute selection logic in SQL Server. -->
   <SelectStoredProcedure>AFSelectSppRecords_ArcPro</SelectStoredProcedure>

@@ -15,10 +15,25 @@
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+      <number>4</number>
+     </property>
+     <property name="leftMargin">
+      <number>8</number>
+     </property>
+     <property name="topMargin">
+      <number>8</number>
+     </property>
+     <property name="rightMargin">
+      <number>8</number>
+     </property>
+     <property name="bottomMargin">
+      <number>8</number>
+     </property>
     <item>
      <widget class="QLabel" name="labelColumns">
       <property name="text">
-       <string>Columns</string>
+       <string>Select:</string>
       </property>
      </widget>
     </item>
@@ -42,6 +57,13 @@
       </widget>
     </item>
     <item>
+      <widget class="QLabel" name="labelTableName">
+       <property name="text">
+        <string>From:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
      <layout class="QHBoxLayout" name="horizontalLayoutTableAndRefresh">
       <item>
        <widget class="QComboBox" name="comboTableName">
@@ -69,7 +91,7 @@
         </property>
         <property name="icon">
          <iconset>
-          <normaloff>../icons/DataSelector16.png</normaloff>../icons/DataSelector16.png</iconset>
+          <normaloff>../icons/Refresh16.png</normaloff>../icons/Refresh16.png</iconset>
         </property>
        </widget>
       </item>
@@ -78,7 +100,7 @@
     <item>
      <widget class="QLabel" name="labelWhere">
       <property name="text">
-       <string>Where</string>
+       <string>Where:</string>
       </property>
      </widget>
     </item>
@@ -110,7 +132,7 @@
     <item>
      <widget class="QLabel" name="labelGroupBy">
       <property name="text">
-       <string>Group By</string>
+       <string>Group By:</string>
       </property>
      </widget>
     </item>
@@ -142,7 +164,7 @@
     <item>
      <widget class="QLabel" name="labelOrderBy">
       <property name="text">
-       <string>Order By</string>
+       <string>Order By:</string>
       </property>
      </widget>
     </item>
@@ -174,7 +196,7 @@
     <item>
      <widget class="QLabel" name="labelOutputFormat">
       <property name="text">
-       <string>Output Format</string>
+       <string>Output File Format:</string>
       </property>
      </widget>
     </item>
@@ -201,34 +223,34 @@
      </widget>
     </item>
     <item>
-     <widget class="QCheckBox" name="checkClearLog">
-      <property name="toolTip">
-       <string>Clear the log file before the process starts?</string>
-      </property>
-      <property name="text">
-       <string>Clear log before run</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-      <widget class="QCheckBox" name="checkOpenLog">
-       <property name="toolTip">
-        <string>Open the log file when the process is complete?</string>
-       </property>
-       <property name="text">
-        <string>Open log after run</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="labelMessage">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
+      <layout class="QHBoxLayout" name="horizontalLayoutLogOptions">
+       <item>
+        <widget class="QCheckBox" name="checkClearLog">
+         <property name="toolTip">
+          <string>Clear the log file before the process starts?</string>
+         </property>
+         <property name="text">
+          <string>Clear log file?</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkOpenLog">
+         <property name="toolTip">
+          <string>Open the log file when the process is complete?</string>
+         </property>
+         <property name="text">
+          <string>Open log file?</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayoutButtons">
+        <property name="spacing">
+          <number>2</number>
+         </property>
         <item>
           <widget class="QPushButton" name="buttonLoad">
             <property name="toolTip">
@@ -358,6 +380,13 @@
       </layout>
     </item>
     <item>
+      <widget class="QLabel" name="labelMessage">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+    <item>
       <spacer name="verticalSpacerBottom">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -367,8 +396,8 @@
        </property>
        <property name="sizeHint">
         <size>
-         <width>20</width>
-         <height>40</height>
+         <width>1</width>
+         <height>1</height>
         </size>
        </property>
       </spacer>
